@@ -1,11 +1,14 @@
+mod services;
+
 use serenity::async_trait;
 use serenity::prelude::*;
 use serenity::model::channel::Message;
 use serenity::framework::standard::macros::{command, group};
 use serenity::framework::standard::{StandardFramework, CommandResult};
+use crate::services::score_service::ScoreService;
 
 #[group]
-#[commands(ping)]
+#[commands(ping, score)]
 struct General;
 
 struct Handler;
@@ -57,6 +60,18 @@ async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
         let mut data = ctx.data.write().await;
         data.insert::<Counter>(new_counter);
     }
+
+    Ok(())
+}
+
+#[command]
+async fn score(ctx: &Context, msg: &Message) -> CommandResult {
+
+    let content: String = msg.content.clone();
+    let traitement: String = ScoreService::handle_message(&content).unwrap();
+
+    msg
+        .reply(ctx, format!("{}", traitement)).await?;
 
     Ok(())
 }
