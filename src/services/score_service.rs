@@ -13,7 +13,7 @@ impl ScoreService {
         sutom_message
             .replace("\n", " ")
             .split(" ")
-            .filter(|chaine| chaine.contains("/") && chaine.len() == 2)
+            .filter(|chaine| chaine.contains("/") && chaine.len() == 3)
             .map(|chaine| chaine.to_string())
             .collect::<Vec<String>>()
             .get(0)
