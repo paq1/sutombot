@@ -6,8 +6,11 @@ use serenity::prelude::*;
 use serenity::model::channel::Message;
 use serenity::framework::standard::macros::{command, group};
 use serenity::framework::standard::{StandardFramework, CommandResult};
+use serenity::futures::TryFutureExt;
 use crate::bot::services::party_service_impl::PartyServiceImpl;
+use crate::bot::services::sutom_service_impl::SutomServiceImpl;
 use crate::core::services::party_service::PartyService;
+use crate::core::services::sutom_service::SutomService;
 
 #[group]
 #[commands(ping, partie)]
@@ -40,6 +43,7 @@ pub async fn run_discord_bot(token: &str) {
         let mut data = client.data.write().await;
         data.insert::<Counter>(1);
         data.insert::<PartyServiceImpl>(PartyServiceImpl {});
+        data.insert::<SutomServiceImpl>(SutomServiceImpl {});
     }
 
     // start listening for events by starting a single shard
@@ -72,9 +76,32 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
         let data = ctx.data.read().await;
         data.get::<PartyServiceImpl>().unwrap().clone()
     };
+    let sutom_service = {
+        let data = ctx.data.read().await;
+        data.get::<SutomServiceImpl>().unwrap().clone()
+    };
 
     let content: String = msg.content.clone();
     let party = party_service.handle_message(&content)?;
+
+    let user = msg.author.name.clone();
+
+    sutom_service
+        .player_exist(user)
+        .and_then(|response| async move{
+            if response {
+                msg
+                    .reply(ctx, format!("le compte exist"))
+                    .await
+                    .map_err(|e| e.to_string())
+            } else {
+                msg
+                    .reply(ctx, format!("le compte nexiste pas encore"))
+                    .await
+                    .map_err(|e| e.to_string())
+            }
+        })
+        .await?;
 
     msg
         .reply(ctx, format!("{:?}", party)).await?;
