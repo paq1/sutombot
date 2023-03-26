@@ -74,7 +74,7 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
     };
 
     let content: String = msg.content.clone();
-    let party = party_service.handle_message(&content).unwrap();
+    let party = party_service.handle_message(&content)?;
 
     msg
         .reply(ctx, format!("{:?}", party)).await?;
