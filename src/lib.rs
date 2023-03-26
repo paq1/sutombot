@@ -1,14 +1,16 @@
-mod services;
+mod core;
+mod bot;
 
 use serenity::async_trait;
 use serenity::prelude::*;
 use serenity::model::channel::Message;
 use serenity::framework::standard::macros::{command, group};
 use serenity::framework::standard::{StandardFramework, CommandResult};
-use crate::services::score_service::ScoreService;
+use crate::bot::services::party_service_impl::PartyServiceImpl;
+use crate::core::services::party_service::PartyService;
 
 #[group]
-#[commands(ping, score)]
+#[commands(ping, partie)]
 struct General;
 
 struct Handler;
@@ -37,6 +39,7 @@ pub async fn run_discord_bot(token: &str) {
     {
         let mut data = client.data.write().await;
         data.insert::<Counter>(1);
+        data.insert::<PartyServiceImpl>(PartyServiceImpl {});
     }
 
     // start listening for events by starting a single shard
@@ -64,13 +67,17 @@ async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn score(ctx: &Context, msg: &Message) -> CommandResult {
+async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
+    let party_service = {
+        let data = ctx.data.read().await;
+        data.get::<PartyServiceImpl>().unwrap().clone()
+    };
 
     let content: String = msg.content.clone();
-    let traitement: String = ScoreService::handle_message(&content).unwrap();
+    let party = party_service.handle_message(&content).unwrap();
 
     msg
-        .reply(ctx, format!("{}", traitement)).await?;
+        .reply(ctx, format!("{:?}", party)).await?;
 
     Ok(())
 }
