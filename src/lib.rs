@@ -77,6 +77,8 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
         data.get::<PartyServiceImpl>().unwrap().clone()
     };
 
+    // todo mettre les service en ref pour pouvoir les passer aux closures
+
     let content: String = msg.content.clone();
     let party = party_service.handle_message(&content)?;
     println!("{:?}", party.clone());
