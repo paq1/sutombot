@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  bot:
+    image: ppaquin/dev-sutombot:latest
+    environment:
+      - DISCORD_TOKEN=xxx
+      - SUTOM_API_URL=xxx
