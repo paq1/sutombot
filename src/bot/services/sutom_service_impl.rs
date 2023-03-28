@@ -14,7 +14,7 @@ pub struct SutomServiceImpl {
 #[async_trait]
 impl SutomService for SutomServiceImpl {
     async fn player_exist(&self, name: String) -> Result<bool, String> {
-        reqwest::get("http://localhost:8000/players")
+        reqwest::get(format!("{}/players", self.url))
             .and_then(|response| {
                 let body = response.json::<Vec<Player>>();
                 body
@@ -32,7 +32,7 @@ impl SutomService for SutomServiceImpl {
 
     async fn create_account(&self, name: String) -> Result<(), String> {
         reqwest::Client::new()
-            .post("http://localhost:8000/players/commands/create")
+            .post(format!("{}/players/commands/create", self.url))
             .json(&CreatePlayer::new(name))
             .send()
             .await
@@ -42,7 +42,7 @@ impl SutomService for SutomServiceImpl {
 
     async fn add_party(&self, party: Party, name: String) -> Result<u16, String> {
         reqwest::Client::new()
-            .put(format!("http://localhost:8000/players/commands/add-party/{name}"))
+            .put(format!("{}/players/commands/add-party/{}", self.url, name))
             .json(&party)
             .send()
             .await
