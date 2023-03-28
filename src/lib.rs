@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Display, Formatter};
+
 use serenity::async_trait;
 use serenity::framework::standard::{CommandResult, StandardFramework};
 use serenity::framework::standard::macros::{command, group};
@@ -105,28 +106,19 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
                 SutomServiceImpl::add_party(party.clone(), user.clone())
                     .and_then(|res| async move {
                         if res >= 400 {
-                            Err("vous avez déjà joué aujourd'hui 😋".to_string())
+                            reply_standard("vous avez déjà joué aujourd'hui 😋", ctx, msg).await
                         } else {
-                            msg
-                                .reply(ctx, format!("la partie a bien ete ajoutée 😘"))
-                                .await
-                                .map(|_| ())
-                                .map_err(|err| err.to_string())
+                            reply_standard("la partie a bien ete ajoutée 😘", ctx, msg).await
                         }
                     })
                     .await
             } else {
                 SutomServiceImpl::create_account(user.clone())
                     .and_then(|_| async {
-                        msg
-                            .reply(ctx, format!("votre compte a bien ete créé"))
-                            .await
-                            .map(|_| ())
-                            .map_err(|err| err.to_string())
+                        reply_standard("votre compte a bien été créé 🤖", ctx, msg).await
                     })
                     .and_then(|_| async move {
-                        msg
-                            .reply(ctx, format!("la partie a bien ete ajoutée"))
+                        reply_standard("la partie a bien ete ajoutée 😘", ctx, msg)
                             .map_err(|err| err.to_string())
                             .and_then(|_| async move {
                                 SutomServiceImpl::add_party(party.clone(), user.clone())
@@ -138,17 +130,17 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
                     .await
             }
         })
-        // .await
-        .map_err(|err| async move {
-            msg
-                .reply(ctx, format!("{}", err.as_str()))
-                .await
-                .map(|_| ())
-                .map_err(|err| err.to_string())
-            // Err::<(), String>(err.clone())
-        })
         .await
-        .map_err(|_| MonErreur {})?;
+        .map_err(|_| MonErreur {})
+        .expect("erreur");
 
     Ok(())
+}
+
+async fn reply_standard(content: &str, ctx: &Context, msg: &Message) -> Result<(), String> {
+    msg
+        .reply(ctx, content)
+        .await
+        .map(|_| ())
+        .map_err(|err| err.to_string())
 }
