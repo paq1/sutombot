@@ -38,13 +38,13 @@ impl SutomService for SutomServiceImpl {
             .map_err(|err| err.to_string())
     }
 
-    async fn add_party(party: Party, name: String) -> Result<(), String> {
+    async fn add_party(party: Party, name: String) -> Result<u16, String> {
         reqwest::Client::new()
             .put(format!("http://localhost:8000/players/commands/add-party/{name}"))
             .json(&party)
             .send()
             .await
-            .map(|_| ())
+            .map(|response| response.status().as_u16())
             .map_err(|err| err.to_string())
     }
 }

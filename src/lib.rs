@@ -1,3 +1,4 @@
+use std::fmt::{Debug, Display, Formatter};
 use serenity::async_trait;
 use serenity::framework::standard::{CommandResult, StandardFramework};
 use serenity::framework::standard::macros::{command, group};
@@ -25,6 +26,19 @@ impl EventHandler for Handler {}
 struct Counter;
 impl TypeMapKey for Counter {
     type Value = u32;
+}
+
+#[derive(Debug)]
+struct MonErreur;
+
+impl Display for MonErreur {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Mon Erreur")
+    }
+}
+
+impl std::error::Error for MonErreur {
+
 }
 
 pub async fn run_discord_bot(token: &str) {
@@ -88,14 +102,17 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
     SutomServiceImpl::player_exist(user.clone())
         .and_then(|response| async move {
             if response.clone() {
-                // Ok(())
                 SutomServiceImpl::add_party(party.clone(), user.clone())
-                    .and_then(|_| async {
-                        msg
-                            .reply(ctx, format!("la partie a bien ete ajoutée"))
-                            .await
-                            .map(|_| ())
-                            .map_err(|err| err.to_string())
+                    .and_then(|res| async move {
+                        if res >= 400 {
+                            Err("vous avez déjà joué aujourd'hui 😋".to_string())
+                        } else {
+                            msg
+                                .reply(ctx, format!("la partie a bien ete ajoutée 😘"))
+                                .await
+                                .map(|_| ())
+                                .map_err(|err| err.to_string())
+                        }
                     })
                     .await
             } else {
@@ -114,13 +131,24 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
                             .and_then(|_| async move {
                                 SutomServiceImpl::add_party(party.clone(), user.clone())
                                     .await
+                                    .map(|_| ())
                             })
                             .await
                     })
                     .await
             }
         })
-        .await?;
+        // .await
+        .map_err(|err| async move {
+            msg
+                .reply(ctx, format!("{}", err.as_str()))
+                .await
+                .map(|_| ())
+                .map_err(|err| err.to_string())
+            // Err::<(), String>(err.clone())
+        })
+        .await
+        .map_err(|_| MonErreur {})?;
 
     Ok(())
 }
