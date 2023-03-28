@@ -7,11 +7,13 @@ use crate::core::entities::party::Party;
 use crate::core::entities::player::Player;
 
 #[derive(Clone)]
-pub struct SutomServiceImpl;
+pub struct SutomServiceImpl {
+    pub url: String
+}
 
 #[async_trait]
 impl SutomService for SutomServiceImpl {
-    async fn player_exist(name: String) -> Result<bool, String> {
+    async fn player_exist(&self, name: String) -> Result<bool, String> {
         reqwest::get("http://localhost:8000/players")
             .and_then(|response| {
                 let body = response.json::<Vec<Player>>();
@@ -28,7 +30,7 @@ impl SutomService for SutomServiceImpl {
             .map_err(|_| "une erreur est survenu".into())
     }
 
-    async fn create_account(name: String) -> Result<(), String> {
+    async fn create_account(&self, name: String) -> Result<(), String> {
         reqwest::Client::new()
             .post("http://localhost:8000/players/commands/create")
             .json(&CreatePlayer::new(name))
@@ -38,7 +40,7 @@ impl SutomService for SutomServiceImpl {
             .map_err(|err| err.to_string())
     }
 
-    async fn add_party(party: Party, name: String) -> Result<u16, String> {
+    async fn add_party(&self, party: Party, name: String) -> Result<u16, String> {
         reqwest::Client::new()
             .put(format!("http://localhost:8000/players/commands/add-party/{name}"))
             .json(&party)
@@ -47,4 +49,8 @@ impl SutomService for SutomServiceImpl {
             .map(|response| response.status().as_u16())
             .map_err(|err| err.to_string())
     }
+}
+
+impl serenity::prelude::TypeMapKey for SutomServiceImpl {
+    type Value = Self;
 }

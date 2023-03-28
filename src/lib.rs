@@ -1,3 +1,4 @@
+use std::env;
 use std::fmt::{Debug, Display, Formatter};
 
 use serenity::async_trait;
@@ -59,6 +60,7 @@ pub async fn run_discord_bot(token: &str) {
         let mut data = client.data.write().await;
         data.insert::<Counter>(1);
         data.insert::<PartyServiceImpl>(PartyServiceImpl {});
+        data.insert::<SutomServiceImpl>(SutomServiceImpl { url: env::var("SUTOM_API_URL").expect("url manquante") })
     }
 
     // start listening for events by starting a single shard
@@ -92,18 +94,20 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
         data.get::<PartyServiceImpl>().unwrap().clone()
     };
 
-    // todo mettre les service en ref pour pouvoir les passer aux closures
+    let sutom_service = &{
+        let data = ctx.data.read().await;
+        data.get::<SutomServiceImpl>().unwrap().clone()
+    };
 
     let content: String = msg.content.clone();
     let party = party_service.handle_message(&content)?;
-    println!("{:?}", party.clone());
 
     let user = msg.author.name.clone();
 
-    SutomServiceImpl::player_exist(user.clone())
+    sutom_service.player_exist(user.clone())
         .and_then(|response| async move {
             if response.clone() {
-                SutomServiceImpl::add_party(party.clone(), user.clone())
+                sutom_service.add_party(party.clone(), user.clone())
                     .and_then(|res| async move {
                         if res >= 400 {
                             reply_standard("vous avez déjà joué aujourd'hui 😋", ctx, msg).await
@@ -113,7 +117,7 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
                     })
                     .await
             } else {
-                SutomServiceImpl::create_account(user.clone())
+                sutom_service.create_account(user.clone())
                     .and_then(|_| async {
                         reply_standard("votre compte a bien été créé 🤖", ctx, msg).await
                     })
@@ -121,7 +125,7 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
                         reply_standard("la partie a bien ete ajoutée 😘", ctx, msg)
                             .map_err(|err| err.to_string())
                             .and_then(|_| async move {
-                                SutomServiceImpl::add_party(party.clone(), user.clone())
+                                sutom_service.add_party(party.clone(), user.clone())
                                     .await
                                     .map(|_| ())
                             })

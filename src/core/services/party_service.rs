@@ -9,9 +9,6 @@ pub trait PartyService {
         let nombre_essai_total_opt = Self::get_nombre_essaies_total(sutom_msg);
         let nombre_essai_opt = Self::get_nombre_essaies(sutom_msg);
 
-        println!("taille mot : [{:?}], nombre essaies : [{:?}], nombre essaies total : [{:?}]", taille_mot_opt, nombre_essai_opt, nombre_essai_total_opt);
-
-
         match (taille_mot_opt, nombre_essai_total_opt, nombre_essai_opt) {
             (Some(taille), Some(total), Some(current)) => Ok(
                 Party::new(taille as u32, total as u32, current as u32)
