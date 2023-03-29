@@ -4,7 +4,7 @@ use serenity::prelude::Context;
 
 use crate::bot::services::sutom_service_impl::SutomServiceImpl;
 use crate::core::services::sutom_service::SutomService;
-
+use crate::bot::services::message_service::reply_standard;
 
 pub async fn classement_command(ctx: &Context, msg: &Message) -> CommandResult {
     let sutom_service = &{
@@ -22,10 +22,3 @@ pub async fn classement_command(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
-async fn reply_standard(content: &str, ctx: &Context, msg: &Message) -> Result<(), String> {
-    msg
-        .reply(ctx, content)
-        .await
-        .map(|_| ())
-        .map_err(|err| err.to_string())
-}

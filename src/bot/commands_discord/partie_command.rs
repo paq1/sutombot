@@ -2,6 +2,7 @@ use serenity::framework::standard::CommandResult;
 use serenity::futures::TryFutureExt;
 use serenity::model::prelude::Message;
 use serenity::prelude::Context;
+use crate::bot::services::message_service::reply_standard;
 
 use crate::bot::services::party_service_impl::PartyServiceImpl;
 use crate::bot::services::sutom_service_impl::SutomServiceImpl;
@@ -58,12 +59,4 @@ pub async fn partie_command(ctx: &Context, msg: &Message) -> CommandResult {
         .await?;
 
     Ok(())
-}
-
-async fn reply_standard(content: &str, ctx: &Context, msg: &Message) -> Result<(), String> {
-    msg
-        .reply(ctx, content)
-        .await
-        .map(|_| ())
-        .map_err(|err| err.to_string())
 }
