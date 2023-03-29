@@ -15,9 +15,10 @@ use crate::core::services::sutom_service::SutomService;
 
 mod core;
 mod bot;
+mod models;
 
 #[group]
-#[commands(ping, partie)]
+#[commands(ping, partie, classement)]
 struct General;
 
 struct Handler;
@@ -134,9 +135,24 @@ async fn partie(ctx: &Context, msg: &Message) -> CommandResult {
                     .await
             }
         })
-        .await
-        .map_err(|_| MonErreur {})
-        .expect("erreur");
+        .await?;
+
+    Ok(())
+}
+
+#[command]
+async fn classement(ctx: &Context, msg: &Message) -> CommandResult {
+    let sutom_service = &{
+        let data = ctx.data.read().await;
+        data.get::<SutomServiceImpl>().unwrap().clone()
+    };
+
+    let classement_global = sutom_service
+        .classement()
+        .await?;
+
+    reply_standard(format!("{:?}", classement_global).as_str(), ctx, msg).await?;
+
 
     Ok(())
 }
