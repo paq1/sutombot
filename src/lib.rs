@@ -9,7 +9,6 @@ use serenity::prelude::*;
 
 use crate::bot::commands_discord::classement_command::classement_command;
 use crate::bot::commands_discord::partie_command::partie_command;
-use crate::bot::services::party_service_impl::PartyServiceImpl;
 use crate::bot::services::sutom_service_impl::SutomServiceImpl;
 
 mod core;
@@ -69,7 +68,6 @@ pub async fn run_discord_bot(token: &str) {
     {
         let mut data = client.data.write().await;
         data.insert::<Counter>(1);
-        data.insert::<PartyServiceImpl>(PartyServiceImpl {});
         data.insert::<SutomServiceImpl>(SutomServiceImpl { url: env::var("SUTOM_API_URL").expect("url manquante") })
     }
 

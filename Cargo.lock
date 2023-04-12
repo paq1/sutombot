@@ -1249,6 +1249,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
+name = "sutom-rules"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "809464a15b697216d84f6fb0d41eaa1b6c5fbdf560172a2938dd929347621dfb"
+
+[[package]]
 name = "sutombot"
 version = "0.1.0"
 dependencies = [
@@ -1256,6 +1262,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serenity",
+ "sutom-rules",
  "tokio",
 ]
 
